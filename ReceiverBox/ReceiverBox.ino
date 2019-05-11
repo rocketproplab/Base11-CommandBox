@@ -2,7 +2,7 @@
 
 #define BITS_PER_CHAR 8
 
-#define VALVE_1 13
+#define VALVE_1 2
 #define VALVE_2 3
 #define VALVE_3 4
 #define NO_VALVE -1
@@ -13,6 +13,7 @@
 
 #define SYNC_HEADER 0b11001111
 #define PACKET_SIZE 2
+#define FAIL_TIMEOUT 4000
 
 #define PT_READ_INERVAL 500
 
@@ -28,6 +29,10 @@ NAU7802 adc = NAU7802();
 // Make sure PIN_MAP is at least 8 elements long
 static const int PIN_MAP[] = {VALVE_1, VALVE_2, VALVE_3, NO_VALVE, NO_VALVE, NO_VALVE, NO_VALVE, NO_VALVE};
 
+static const char failPins = 0b001;
+
+unsigned long lastRecive = -1;
+
 void setup() {
   Serial1.begin(300);     // opens Serial1 port, sets data rate to 9600 bps
   Serial.begin(115200);
@@ -40,7 +45,7 @@ void setup() {
   adc.selectCh1();
   #endif
 
-  Serial.println("Starting!");
+  Serial.println("ADC Initialized!");
 
   // define any of the pins in PIN_MAP as output
   for (int i = 0; i < BITS_PER_CHAR; i++) {
@@ -63,9 +68,11 @@ void loop() {
     advanceSerial1Until(SYNC_HEADER);
     if (Serial1.available()) {
       inputByte = Serial1.read();
+      updateLastRead();
       updatePins(inputByte);
     }
   }
+  checkLastRead();
 
   #ifdef ADC_ACTIVE
   static unsigned long lastTime = millis();
@@ -95,6 +102,19 @@ void advanceSerial1Until(char target) {
     if (readVal == target) {
       return;
     }
+  }
+}
+
+void updateLastRead(){
+  lastRecive = millis();
+}
+
+void checkLastRead(){
+  if(lastRecive == -1){
+    return;
+  }
+  if((millis() - lastRecive) > FAIL_TIMEOUT){
+    updatePins(failPins);
   }
 }
 
