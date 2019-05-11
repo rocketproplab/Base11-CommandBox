@@ -6,9 +6,9 @@
 
 #define SYNC_HEADER 0b11001111
 
-#define VALVE_1_PIN 20
-#define VALVE_2_PIN 19
-#define VALVE_3_PIN 18
+#define VALVE_1_PIN 0
+#define VALVE_2_PIN 1
+#define VALVE_3_PIN 2
 
 #define VALVE_SEND_TIME 100
 
@@ -25,7 +25,7 @@ void setup()
     pinMode(i + 34, INPUT);
   }
   Serial.begin(115200);
-  Serial1.begin(9600);
+  Serial1.begin(300);
   Serial.println("setup() complete; dab");
 }
 
@@ -64,15 +64,18 @@ void loop()
 }
 
 void readADCInput() {
-  advanceSerialUntil(SYNC_HEADER);
-  if (Serial1.available() > 1) {
-    char packetLen = Serial.read();
+  if(advanceSerialUntil(SYNC_HEADER)){
+    delay(100);
+  }
+  if (Serial1.available() >= 1) {
+    delay(100);
+    char packetLen = Serial1.read();
     unsigned long adcValue = 0;
     if (Serial1.available() < packetLen) {
       return;
     }
     for (int i = 0; i < packetLen; i++) {
-      adcValue << BITS_PER_BYTE;
+      adcValue <<= BITS_PER_BYTE;
       adcValue |= Serial1.read();
     }
     Serial.print("ADC Value: ");
@@ -85,12 +88,14 @@ void readADCInput() {
 
    @param target what character to look for
 */
-void advanceSerialUntil(char target) {
+int advanceSerialUntil(char target) {
   while (Serial1.available()) {
-    if (Serial1.read() == target) {
-      return;
+    char readChar = Serial1.read();
+    if (readChar == target) {
+      return 1;
     }
   }
+  return 0;
 }
 
 void readValvesFromSwitches(int * switches) {
@@ -101,7 +106,9 @@ void readValvesFromSwitches(int * switches) {
 }
 
 void sendValveState(bool valve1, bool valve2, bool valve3) {
-  char data = valve1 * VALVE_1_ID + valve2 * VALVE_2_ID + valve3 * VALVE_3_ID;
+  char data = valve1 ? VALVE_1_ID : 0;
+  data |= valve2 ? VALVE_2_ID : 0;
+  data |= valve3 ? VALVE_3_ID : 0;
   Serial1.write(SYNC_HEADER);
   Serial1.write(data);
 }

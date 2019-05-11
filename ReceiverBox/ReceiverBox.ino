@@ -2,7 +2,7 @@
 
 #define BITS_PER_CHAR 8
 
-#define VALVE_1 2
+#define VALVE_1 13
 #define VALVE_2 3
 #define VALVE_3 4
 #define NO_VALVE -1
@@ -16,9 +16,9 @@
 
 #define PT_READ_INERVAL 500
 
-//#define ADC
+#define ADC_ACTIVE
 
-#ifdef ADC
+#ifdef ADC_ACTIVE
 #include <NAU7802.h>
 
 NAU7802 adc = NAU7802();
@@ -29,13 +29,18 @@ NAU7802 adc = NAU7802();
 static const int PIN_MAP[] = {VALVE_1, VALVE_2, VALVE_3, NO_VALVE, NO_VALVE, NO_VALVE, NO_VALVE, NO_VALVE};
 
 void setup() {
-  Serial.begin(9600);     // opens serial port, sets data rate to 9600 bps
+  Serial1.begin(300);     // opens Serial1 port, sets data rate to 9600 bps
+  Serial.begin(115200);
 
-  #ifdef ADC
-  // init the ADC
+  Serial.println("Starting!");
+
+  #ifdef ADC_ACTIVE
+  // init the ADC_ACTIVE
   adc.begin();
   adc.selectCh1();
   #endif
+
+  Serial.println("Starting!");
 
   // define any of the pins in PIN_MAP as output
   for (int i = 0; i < BITS_PER_CHAR; i++) {
@@ -43,31 +48,36 @@ void setup() {
       pinMode(PIN_MAP[i], OUTPUT);
     }
   }
+
+  digitalWrite(13, HIGH);
+  delay(1000);
+  digitalWrite(13, LOW);
+  delay(1000);
 }
 
 void loop() {
   char inputByte;
 
   // Read from the serail and look for sync header
-  if (Serial.available() >= PACKET_SIZE) {
-    advanceSerialUntil(SYNC_HEADER);
-    if (Serial.available()) {
-      inputByte = Serial.read();
+  if (Serial1.available() >= PACKET_SIZE) {
+    advanceSerial1Until(SYNC_HEADER);
+    if (Serial1.available()) {
+      inputByte = Serial1.read();
       updatePins(inputByte);
     }
   }
 
-  #ifdef ADC
+  #ifdef ADC_ACTIVE
   static unsigned long lastTime = millis();
 
-  // read the adc and write the bytes to serial
+  // read the adc and write the bytes to Serial1
   if (millis() - lastTime > PT_READ_INERVAL) {
     lastTime = millis();
     long adcValue = adc.readADC();
-    Serial.write(SYNC_HEADER);
-    Serial.write(sizeof(long));
+    Serial1.write(SYNC_HEADER);
+    Serial1.write(sizeof(long));
     for (int i = 0; i < sizeof(long); i++) {
-      Serial.write(adcValue & LAST_BYTE);
+      Serial1.write(adcValue & LAST_BYTE);
       adcValue >>= BITS_PER_BYTE;
     }
   }
@@ -75,13 +85,14 @@ void loop() {
 }
 
 /**
- * Advances the serial until it has no more avaiable or it is one afer target
+ * Advances the Serial1 until it has no more avaiable or it is one afer target
  * 
  * @param target what character to look for
  */
-void advanceSerialUntil(char target) {
-  while (Serial.available()) {
-    if (Serial.read() == target) {
+void advanceSerial1Until(char target) {
+  while (Serial1.available()) {
+    char readVal = Serial1.read();
+    if (readVal == target) {
       return;
     }
   }
