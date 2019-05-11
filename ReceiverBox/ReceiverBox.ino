@@ -114,7 +114,7 @@ void checkLastRead(){
     return;
   }
   if((millis() - lastRecive) > FAIL_TIMEOUT){
-    updatePins(failPins);
+    updatePins(failPins); 
   }
 }
 
