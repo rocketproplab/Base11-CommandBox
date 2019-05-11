@@ -1,0 +1,6 @@
+Command Box
+===
+
+This project contains two subprojects for the RPL command box. The first is the
+code running on the command box itself while the second is the code running
+on a thethered base station.
