@@ -25,7 +25,7 @@ void setup()
     pinMode(i + 34, INPUT);
   }
   Serial.begin(115200);
-  Serial1.begin(300);
+  Serial1.begin(1200);
   Serial.println("setup() complete; dab");
 }
 
@@ -64,23 +64,26 @@ void loop()
 }
 
 void readADCInput() {
-  if(advanceSerialUntil(SYNC_HEADER)){
-    delay(100);
+  while(Serial1.available()){
+    Serial.write(Serial1.read());
   }
-  if (Serial1.available() >= 1) {
-    delay(100);
-    char packetLen = Serial1.read();
-    unsigned long adcValue = 0;
-    if (Serial1.available() < packetLen) {
-      return;
-    }
-    for (int i = 0; i < packetLen; i++) {
-      adcValue <<= BITS_PER_BYTE;
-      adcValue |= Serial1.read();
-    }
-    Serial.print("ADC Value: ");
-    Serial.println(adcValue);
-  }
+//  if(advanceSerialUntil(SYNC_HEADER)){
+//    delay(100);
+//  }
+//  if (Serial1.available() >= 1) {
+//    delay(100);
+//    char packetLen = Serial1.read();
+//    unsigned long adcValue = 0;
+//    if (Serial1.available() < packetLen) {
+//      return;
+//    }
+//    for (int i = 0; i < packetLen; i++) {
+//      adcValue <<= BITS_PER_BYTE;
+//      adcValue |= Serial1.read();
+//    }
+//    Serial.print("ADC Value: ");
+//    Serial.println(adcValue);
+//  }
 }
 
 /**

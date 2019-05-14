@@ -13,7 +13,7 @@
 
 #define SYNC_HEADER 0b11001111
 #define PACKET_SIZE 2
-#define FAIL_TIMEOUT 4000
+#define FAIL_TIMEOUT 6000
 
 #define PT_READ_INERVAL 500
 
@@ -31,10 +31,10 @@ static const int PIN_MAP[] = {VALVE_1, VALVE_2, VALVE_3, NO_VALVE, NO_VALVE, NO_
 
 static const char failPins = 0b001;
 
-unsigned long lastRecive = -1;
+unsigned long lastRecive = millis();
 
 void setup() {
-  Serial1.begin(300);     // opens Serial1 port, sets data rate to 9600 bps
+  Serial1.begin(1200);     // opens Serial1 port, sets data rate to 9600 bps
   Serial.begin(115200);
 
   Serial.println("Starting!");
@@ -81,12 +81,13 @@ void loop() {
   if (millis() - lastTime > PT_READ_INERVAL) {
     lastTime = millis();
     long adcValue = adc.readADC();
-    Serial1.write(SYNC_HEADER);
-    Serial1.write(sizeof(long));
-    for (int i = 0; i < sizeof(long); i++) {
-      Serial1.write(adcValue & LAST_BYTE);
-      adcValue >>= BITS_PER_BYTE;
-    }
+    Serial1.println(adcValue);
+//    Serial1.write(SYNC_HEADER);
+//    Serial1.write(sizeof(long));
+//    for (int i = 0; i < sizeof(long); i++) {
+//      Serial1.write(adcValue & LAST_BYTE);
+//      adcValue >>= BITS_PER_BYTE;
+//    }
   }
   #endif
 }
