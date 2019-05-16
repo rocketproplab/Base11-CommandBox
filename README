@@ -21,3 +21,19 @@ python DataWriter.py /dev/COMMPORT outputfile.csv
 
 /dev/COMMPORT is the port you used to upload to the arduino in the arduino IDE
 while outputfile.csv is the name of the file that is written to disk.
+
+## Pinout
+
+Each arduino is connected in the following mapping to the RS485 Board.
+RO ->  15
+RE ->  2
+DE ->  3
+DI ->  16
+VCC -> 5V
+GND -> GND
+
+The A pin on the RS485 goes to the A pin on the other RS485. The B pin on the
+RS485 goes to the pin B on the other RS485.
+
+Note in our case the Black arduino needs to be connected to the computer and the
+blue arduino is connected to the PTs on pins A0-A15.
