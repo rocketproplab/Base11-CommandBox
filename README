@@ -1,6 +1,23 @@
-Command Box
-===
+# Command Box
+
 
 This project contains two subprojects for the RPL command box. The first is the
 code running on the command box itself while the second is the code running
 on a thethered base station.
+
+## How to run
+
+Make sure both scripts are uploaded to the correct arduinos. PT_READER is hooked
+up to the PTs while PT_RECIVER is hooked up to the computer. After hooking up
+the PTs to A0-A15 connect the two arduinos. Make sure to connect A to A and
+B to B for the RS485 modules.
+
+To write the data to disk run the python script in DataWriter. To do this change
+into the data write directory and execute.
+
+```bash
+python DataWriter.py /dev/COMMPORT outputfile.csv
+```
+
+/dev/COMMPORT is the port you used to upload to the arduino in the arduino IDE
+while outputfile.csv is the name of the file that is written to disk.
